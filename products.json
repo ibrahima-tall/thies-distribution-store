@@ -173,7 +173,7 @@
   },
   {
     "id": 11,
-    "name": "Accessoire informatique — produit à confirmer",
+    "name": "SSD portable USB 3.1 — capacité à confirmer",
     "brand": "Modèle de démonstration",
     "category": "Accessoires",
     "price": null,
@@ -184,11 +184,11 @@
     "condition": "Modèle à confirmer",
     "stock": 0,
     "tag": "Prix à confirmer",
-    "image": "/assets/product-charger.jpg",
+    "image": "/assets/product-charger.png",
     "storage": "—",
     "ram": "—",
     "warranty": "À confirmer",
-    "description": "Fiche de démonstration avec photo illustrative. Le produit exact, ses caractéristiques, son prix et sa disponibilité sont à confirmer auprès de la boutique."
+    "description": "Photo illustrative d’un SSD portable USB 3.1. La marque, la capacité réelle, le prix et la disponibilité sont à confirmer auprès de la boutique."
   },
   {
     "id": 12,

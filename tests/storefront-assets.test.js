@@ -61,8 +61,9 @@ test("printer category has one listing and replacement demos use distinct catego
     assert.match(product.description, /confirm/i);
     assert.ok(fs.existsSync(path.join(root, product.image.slice(1))), "demo product image must exist locally");
   }
-  assert.equal(replacementDemos[0].image, "/assets/product-charger.jpg");
+  assert.equal(replacementDemos[0].image, "/assets/product-charger.png");
   assert.equal(replacementDemos[1].image, "/assets/product-laptop.jpg");
+  assert.match(replacementDemos[0].name, /SSD portable USB 3\.1/);
   assert.match(storefront, /p\.priceOnRequest\?"Prix à confirmer"/);
   assert.match(storefront, /p\.priceOnRequest\|\|p\.stock<1/);
   assert.match(server, /if \(product\.priceOnRequest \|\| !Number\.isSafeInteger\(product\.price\)/);
