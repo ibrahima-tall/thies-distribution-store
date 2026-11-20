@@ -33,6 +33,15 @@ test("storefront branding and hero match the supplied Thiès Distribution refere
   assert.match(html, /\/assets\/hero-thies-distribution\.jpg/);
 });
 
+test("the charger uses the supplied offline product photo", () => {
+  const products = JSON.parse(fs.readFileSync(path.join(root, "products.json"), "utf8"));
+  const charger = products.find(product => product.id === 7);
+
+  assert.ok(charger, "charger product must exist");
+  assert.equal(charger.image, "/assets/product-charger.jpg");
+  assert.ok(fs.existsSync(path.join(root, charger.image.slice(1))), "charger photo must be bundled locally");
+});
+
 test("clicking a product opens its own details without changing the product or comparison modal", () => {
   const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
   const detailHandler = html.match(/function showProduct\(id\) \{([\s\S]*?)\n    \}/)?.[1];
