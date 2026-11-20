@@ -32,3 +32,20 @@ test("storefront branding and hero match the supplied Thiès Distribution refere
   assert.match(html, /href="tel:\+221771234567"/);
   assert.match(html, /\/assets\/hero-thies-distribution\.jpg/);
 });
+
+test("clicking a product opens its own details without changing the product or comparison modal", () => {
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const detailHandler = html.match(/function showProduct\(id\) \{([\s\S]*?)\n    \}/)?.[1];
+
+  assert.ok(detailHandler, "product details handler must exist");
+  assert.match(html, /id="productDetailModal"/);
+  assert.match(html, /id="productDetailContent"/);
+  assert.match(html, /onclick="showProduct\(\$\{p\.id\}\)"/);
+  assert.match(html, /onkeydown="if\(event\.key==='Enter'\|\|event\.key===' '\)/);
+  assert.match(detailHandler, /productDetailContent/);
+  assert.match(detailHandler, /productDetailModal/);
+  assert.match(detailHandler, /p\.category/);
+  assert.match(detailHandler, /p\.warranty/);
+  assert.doesNotMatch(detailHandler, /compareContent|compareModal/);
+  assert.doesNotMatch(detailHandler, /addToCart\(p\.id\);document/);
+});

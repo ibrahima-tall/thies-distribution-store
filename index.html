@@ -344,6 +344,16 @@
     .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
     .modal-head h3 { margin: 0; font: 800 20px Manrope,sans-serif; }
     .modal-head p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    .product-detail { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 26px; align-items: start; }
+    .product-detail-image { width: 100%; max-height: 390px; aspect-ratio: 1; object-fit: contain; border-radius: 12px; background: #f3f5f3; }
+    .product-detail-info { min-width: 0; }
+    .product-detail-info h4 { margin: 8px 0; font: 800 22px/1.35 Manrope,sans-serif; }
+    .product-detail-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 9px; margin: 14px 0; }
+    .product-detail-price .price { font-size: 24px; }
+    .product-detail-stock { margin: 0 0 18px; color: var(--green); font-size: 12px; }
+    .product-specs { width: 100%; border-collapse: collapse; margin: 16px 0 20px; font-size: 12px; }
+    .product-specs th, .product-specs td { border-bottom: 1px solid var(--line); padding: 10px 0; text-align: left; }
+    .product-specs th { width: 42%; color: var(--muted); font-weight: 600; }
     .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; }
     .compare-table th, .compare-table td { border-bottom: 1px solid var(--line); padding: 13px; text-align: left; }
     .compare-table th:first-child { width: 125px; color: var(--muted); font-weight: 600; }
@@ -436,6 +446,10 @@
       .compare-bar span { font-size: 10px; }
       .modal-wrap { padding: 10px; }
       .modal { padding: 18px; }
+      .product-detail { grid-template-columns: 1fr; gap: 18px; }
+      .product-detail-image { max-height: 270px; }
+      .product-detail-info h4 { font-size: 19px; }
+      .product-detail-price .price { font-size: 21px; }
       .compare-table th:first-child { width: 78px; }
       .compare-table th, .compare-table td { padding: 9px 7px; font-size: 10px; }
       .compare-table td { min-width: 120px; }
@@ -942,6 +956,12 @@
     <div class="cart-items" id="cartItems"></div>
     <div class="drawer-footer"><div class="subtotal"><span>Sous-total</span><span id="cartSubtotal">0 FCFA</span></div><button class="checkout-btn" id="checkoutButton">Continuer la commande →</button><p class="checkout-note">Livraison calculée à l’étape suivante</p></div>
   </aside>
+  <div class="modal-wrap" id="productDetailModal" role="dialog" aria-modal="true" aria-labelledby="productDetailTitle">
+    <div class="modal">
+      <div class="modal-head"><div><h3 id="productDetailTitle">Détails du produit</h3><p>Informations et caractéristiques du produit sélectionné.</p></div><button class="icon-button" data-close-modal="productDetailModal" aria-label="Fermer les détails">✕</button></div>
+      <div id="productDetailContent"></div>
+    </div>
+  </div>
   <div class="modal-wrap" id="compareModal"><div class="modal">
     <div class="modal-head"><div><h3>Comparer les produits</h3><p>Comparez les caractéristiques avant de faire votre choix.</p></div><button class="icon-button" id="closeCompare" aria-label="Fermer">✕</button></div>
     <div id="compareContent"></div>
@@ -1016,7 +1036,7 @@
       }
       productGrid.innerHTML = list.map(p=>`
         <article class="product-card">
-          <div class="product-photo" onclick="showProduct(${p.id})">
+          <div class="product-photo" role="button" tabindex="0" aria-label="Afficher le détail de ${escapeHtml(p.name)}" onclick="showProduct(${p.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showProduct(${p.id})}">
             <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.onerror=null;this.src='/product-placeholder.svg'">
             <button type="button" class="favorite-toggle" aria-label="${favoriteIds.includes(p.id)?"Retirer des":"Ajouter aux"} favoris : ${escapeHtml(p.name)}" aria-pressed="${favoriteIds.includes(p.id)}" onclick="event.stopPropagation();toggleFavorite(${p.id})">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
@@ -1026,7 +1046,7 @@
           </div>
           <div class="product-info">
             <div class="product-brand">${escapeHtml(p.brand)} · ${escapeHtml(p.condition)}</div>
-            <div class="product-name" onclick="showProduct(${p.id})">${escapeHtml(p.name)}</div>
+            <div class="product-name" role="button" tabindex="0" aria-label="Afficher le détail de ${escapeHtml(p.name)}" onclick="showProduct(${p.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showProduct(${p.id})}">${escapeHtml(p.name)}</div>
             <div class="rating">★★★★★ <span>${p.rating} (${p.reviews} avis)</span></div>
             <div class="price-line"><span class="price">${formatPrice(p.price)}</span>${p.oldPrice?`<span class="old-price">${formatPrice(p.oldPrice)}</span>`:""}</div>
             <div class="product-foot"><span class="stock">${p.stock>0?`● En stock (${p.stock})`:"● Indisponible"}</span><button class="add-btn" aria-label="Ajouter ${p.name} au panier" onclick="addToCart(${p.id})" ${p.stock<1?"disabled style='opacity:.4;cursor:not-allowed'":""}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg></button></div>
@@ -1143,8 +1163,22 @@
     }
     function showProduct(id) {
       const p=products.find(item=>item.id===id);
-      document.getElementById("compareContent").innerHTML=`<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center"><img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" style="width:100%;border-radius:12px;background:#f3f5f3;max-height:360px;object-fit:cover"><div><div class="product-brand">${escapeHtml(p.brand)} · ${escapeHtml(p.condition)}</div><h3 style="font:800 22px Manrope,sans-serif;line-height:1.35">${escapeHtml(p.name)}</h3><div class="rating">★★★★★ <span>${p.rating} (${p.reviews} avis)</span></div><div class="price" style="font-size:23px;margin:12px 0">${formatPrice(p.price)}</div><p style="font-size:12px;color:#748078;line-height:1.7">Produit authentique, soigneusement vérifié. Profitez de ${escapeHtml(p.warranty)} de garantie et de notre service après-vente local.</p><p style="font-size:11px;color:#176b48">● ${p.stock>0?`${p.stock} en stock`:"Actuellement indisponible"}</p><button class="checkout-btn" onclick="addToCart(${p.id});document.getElementById('compareModal').classList.remove('open')">Ajouter au panier</button></div></div>`;
-      document.getElementById("compareModal").classList.add("open");
+      if(!p) { showToast("Ce produit n'est plus disponible dans le catalogue."); return; }
+      const specs=[["Catégorie",p.category],["État",p.condition],["Stockage",p.storage],["Mémoire RAM",p.ram],["Garantie",p.warranty]]
+        .filter(([,value])=>value&&value!=="—");
+      document.getElementById("productDetailContent").innerHTML=`<div class="product-detail">
+        <img class="product-detail-image" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" onerror="this.onerror=null;this.src='/product-placeholder.svg'">
+        <div class="product-detail-info">
+          <div class="product-brand">${escapeHtml(p.brand)} · ${escapeHtml(p.condition)}</div>
+          <h4>${escapeHtml(p.name)}</h4>
+          <div class="rating" aria-label="Note ${p.rating} sur 5">★★★★★ <span>${p.rating} (${p.reviews} avis)</span></div>
+          <div class="product-detail-price"><span class="price">${formatPrice(p.price)}</span>${p.oldPrice?`<span class="old-price">${formatPrice(p.oldPrice)}</span>`:""}</div>
+          <p class="product-detail-stock">${p.stock>0?`● En stock (${p.stock})`:"● Actuellement indisponible"}</p>
+          ${specs.length?`<table class="product-specs" aria-label="Caractéristiques du produit"><tbody>${specs.map(([label,value])=>`<tr><th scope="row">${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`).join("")}</tbody></table>`:""}
+          <button class="checkout-btn" onclick="addToCart(${p.id});document.getElementById('productDetailModal').classList.remove('open')" ${p.stock<1?"disabled":""}>${p.stock>0?"Ajouter au panier":"Indisponible"}</button>
+        </div>
+      </div>`;
+      document.getElementById("productDetailModal").classList.add("open");
     }
     async function openCheckout(isBusiness=false) {
       if(!cart.length) { showToast("Votre panier est vide."); return; }
