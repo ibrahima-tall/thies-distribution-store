@@ -151,12 +151,17 @@ function validateProduct(input) {
       throw Object.assign(new Error(`Le champ « ${field} » est obligatoire.`), { status: 400 });
     }
   }
-  const price = Number(input.price);
+  const priceOnRequest = input.priceOnRequest === true;
+  const price = priceOnRequest ? null : Number(input.price);
   const stock = Number(input.stock);
-  if (!Number.isSafeInteger(price) || price < 1 || price > 1_000_000_000 || !Number.isSafeInteger(stock) || stock < 0 || stock > 1_000_000) {
+  if ((!priceOnRequest && (!Number.isSafeInteger(price) || price < 1 || price > 1_000_000_000)) ||
+      !Number.isSafeInteger(stock) || stock < 0 || stock > 1_000_000) {
     throw Object.assign(new Error("Le prix ou le stock est invalide."), { status: 400 });
   }
   const oldPrice = input.oldPrice === null || input.oldPrice === "" || input.oldPrice === undefined ? null : Number(input.oldPrice);
+  if (priceOnRequest && oldPrice !== null) {
+    throw Object.assign(new Error("Un produit dont le prix est à confirmer ne peut pas avoir de prix barré."), { status: 400 });
+  }
   if (oldPrice !== null && (!Number.isSafeInteger(oldPrice) || oldPrice < price)) {
     throw Object.assign(new Error("Le prix barré doit être supérieur ou égal au prix de vente."), { status: 400 });
   }
@@ -168,6 +173,7 @@ function validateProduct(input) {
   return {
     name: input.name.trim(), brand: input.brand.trim(), category: input.category.trim(),
     condition: input.condition.trim(), image: imagePath, price, oldPrice,
+    priceOnRequest, description: typeof input.description === "string" ? input.description.trim().slice(0, 600) : "",
     stock, rating: 0, reviews: 0, tag: typeof input.tag === "string" ? input.tag.trim().slice(0, 40) : null,
     storage: String(input.storage || "—").slice(0, 80),
     ram: String(input.ram || "—").slice(0, 80),
@@ -313,6 +319,9 @@ async function handleApi(req, res, url) {
       const product = store.products.find(item => item.id === id);
       if (!product || quantity > 30) {
         throw Object.assign(new Error("Un produit ou une quantité du panier est invalide."), { status: 400 });
+      }
+      if (product.priceOnRequest || !Number.isSafeInteger(product.price) || product.price < 1) {
+        throw Object.assign(new Error(`Le prix de « ${product.name} » doit être confirmé avant toute commande.`), { status: 409 });
       }
       if (product.stock < quantity) {
         throw Object.assign(new Error(`Stock insuffisant pour « ${product.name} ». Stock disponible : ${product.stock}.`), { status: 409 });

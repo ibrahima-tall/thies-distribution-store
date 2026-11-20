@@ -8,6 +8,10 @@
   <style>
     :root{font-family:"Segoe UI",Arial,sans-serif;color:#17211d;background:#f5f6f4;font-size:14px}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer}.top{background:#17211d;color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}.brand{font-size:19px;font-weight:800}.brand span{color:#c8ef62}.top small{color:#bdc9c1}.wrap{max-width:1180px;margin:28px auto;padding:0 20px}.panel{background:white;border:1px solid #e4e9e5;border-radius:12px;padding:22px;margin-bottom:18px}.login{max-width:410px;margin:90px auto}.login h1,.page-head h1{font-size:23px;margin:0 0 8px}.muted{color:#748078;font-size:12px;line-height:1.55}.field{display:grid;gap:6px;margin:14px 0}.field label{font-size:12px;font-weight:650}.field input,.field select{width:100%;border:1px solid #dfe5e0;border-radius:7px;padding:10px;background:white;min-height:40px}.btn{border:0;border-radius:7px;background:#176b48;color:white;font-weight:700;padding:10px 14px}.btn.secondary{background:#edf5ee;color:#176b48}.btn.danger{background:#fff0eb;color:#a64830}.btn:disabled{opacity:.5;cursor:wait}.error{color:#a64830;font-size:12px;min-height:17px}.page-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.tabs{display:flex;gap:8px;margin-bottom:14px}.tabs button{border:1px solid #dfe5e0;border-radius:7px;background:white;padding:9px 13px;color:#66736a}.tabs button.active{background:#176b48;color:white;border-color:#176b48}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:720px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #edf0ed;vertical-align:middle;font-size:12px}th{font-size:10px;color:#748078;text-transform:uppercase;letter-spacing:.04em}td strong{display:block;font-size:12px}.status-select{border:1px solid #dfe5e0;border-radius:6px;background:white;padding:7px;font-size:11px}.actions{display:flex;gap:7px;align-items:center}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}.notice{padding:10px 12px;border-radius:8px;background:#eff7f0;color:#176b48;font-size:12px;margin:12px 0}.hidden{display:none!important}.form-actions{display:flex;gap:8px;margin-top:12px}.product-name{max-width:300px}.login-foot{text-align:center;margin-top:18px}@media(max-width:650px){.top{padding:14px 16px}.wrap{padding:0 12px;margin:18px auto}.panel{padding:16px}.page-head{align-items:flex-start}.page-head h1{font-size:20px}.grid{grid-template-columns:1fr}.actions{align-items:flex-start;flex-direction:column}.login{margin:55px auto}}
   </style>
+  <style>
+    .field input[type="checkbox"] { width: auto; min-height: 0; margin-right: 6px; }
+    .field textarea { width: 100%; min-height: 92px; border: 1px solid #dfe5e0; border-radius: 7px; padding: 10px; resize: vertical; }
+  </style>
 </head>
 <body>
   <header class="top"><div class="brand">MBI <span>Thiès Distribution</span> <small>/ Administration</small></div><button id="logout" class="btn secondary hidden">Se déconnecter</button></header>
@@ -86,7 +90,7 @@
         ["/assets/product-headphones.jpg","Casque audio"],
         ["/assets/product-console.jpg","Console de jeu"],
         ["/assets/product-earbuds.jpg","Écouteurs sans fil"],
-        ["/assets/product-charger.svg","Chargeur USB-C"],
+        ["/assets/product-charger.jpg","Chargeur USB-C"],
         ["/assets/product-macbook.jpg","Ordinateur portable premium"],
         ["/assets/product-controller.jpg","Manette de jeu"]
       ];
@@ -95,13 +99,25 @@
         ?`<option value="${escapeHtml(product.image)}" selected>Image actuelle — choisissez une image locale pour continuer</option>`
         :"";
       wrap.innerHTML=`<form id="productForm" class="panel"><strong>${product.id?"Modifier le produit":"Nouveau produit"}</strong><div class="grid">
-        ${[["name","Nom du produit","text"],["brand","Marque","text"],["category","Catégorie","text"],["price","Prix (FCFA)","number"],["oldPrice","Prix barré (facultatif)","number"],["stock","Stock","number"],["tag","Badge","text"],["condition","État (Neuf ou Reconditionné)","text"],["storage","Stockage","text"],["ram","Mémoire RAM","text"],["warranty","Garantie","text"]].map(([name,label,type])=>`<div class="field"><label for="p-${name}">${label}</label><input id="p-${name}" name="${name}" type="${type}" ${["price","stock"].includes(name)?"min='0' step='1'":""} value="${escapeHtml(product[name]??"")}" ${["name","brand","category","price","stock","condition"].includes(name)?"required":""}></div>`).join("")}
+        ${[["name","Nom du produit","text"],["brand","Marque","text"],["category","Catégorie","text"],["price","Prix (FCFA)","number"],["oldPrice","Prix barré (facultatif)","number"],["stock","Stock","number"],["tag","Badge","text"],["condition","État (Neuf ou Reconditionné)","text"],["storage","Stockage","text"],["ram","Mémoire RAM","text"],["warranty","Garantie","text"]].map(([name,label,type])=>`<div class="field"><label for="p-${name}">${label}</label><input id="p-${name}" name="${name}" type="${type}" ${["price","stock"].includes(name)?"min='0' step='1'":""} value="${escapeHtml(product[name]??"")}" ${["name","brand","category","stock","condition"].includes(name)?"required":""} ${name==="price"&&!product.priceOnRequest?"required":""} ${name==="price"&&product.priceOnRequest?"disabled":""}></div>`).join("")}
+        <div class="field"><label><input type="checkbox" name="priceOnRequest" ${product.priceOnRequest?"checked":""}> Prix à confirmer — produit non achetable</label></div>
+        <div class="field"><label for="p-description">Description</label><textarea id="p-description" name="description" maxlength="600">${escapeHtml(product.description??"")}</textarea></div>
         <div class="field"><label for="p-image">Image locale (disponible hors connexion)</label><select id="p-image" name="image" required>${currentImageOption}${localImages.map(([src,label])=>`<option value="${src}" ${product.image===src?"selected":""}>${label}</option>`).join("")}</select></div>
         </div><div class="error" id="productError"></div><div class="form-actions"><button class="btn" type="submit">Enregistrer</button><button class="btn secondary" type="button" id="cancelProduct">Annuler</button></div></form>`;
       document.getElementById("cancelProduct").addEventListener("click",()=>wrap.classList.add("hidden"));
+      document.querySelector('[name="priceOnRequest"]').addEventListener("change",event=>{
+        const price=document.getElementById("p-price");
+        price.required=!event.currentTarget.checked;
+        price.disabled=event.currentTarget.checked;
+        const oldPrice=document.getElementById("p-oldPrice");
+        oldPrice.disabled=event.currentTarget.checked;
+        if(event.currentTarget.checked){price.value="";oldPrice.value=""}
+      });
       document.getElementById("productForm").addEventListener("submit",async event=>{
         event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget).entries());
-        for(const key of ["price","stock"])data[key]=Number(data[key]);
+        data.priceOnRequest=data.priceOnRequest==="on";
+        data.price=data.priceOnRequest?null:Number(data.price);
+        data.stock=Number(data.stock);
         data.oldPrice=data.oldPrice?Number(data.oldPrice):null;
         try{await request(product.id?`/api/admin/products/${product.id}`:"/api/admin/products",{method:product.id?"PUT":"POST",body:JSON.stringify(data)});wrap.classList.add("hidden");await loadProducts()}
         catch(error){document.getElementById("productError").textContent=error.message}
@@ -109,7 +125,7 @@
     }
     async function loadProducts(){
       const container=document.getElementById("productsContent");container.textContent="Chargement…";
-      try{products=await request("/api/products");container.innerHTML=`<table><thead><tr><th>Produit</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Actions</th></tr></thead><tbody>${products.map(product=>`<tr><td class="product-name"><strong>${escapeHtml(product.name)}</strong><span class="muted">${escapeHtml(product.brand)}</span></td><td>${escapeHtml(product.category)}</td><td>${money(product.price)}</td><td>${product.stock}</td><td><div class="actions"><button class="btn secondary" data-edit="${product.id}">Modifier</button><button class="btn danger" data-delete="${product.id}">Supprimer</button></div></td></tr>`).join("")}</tbody></table>`;
+      try{products=await request("/api/products");container.innerHTML=`<table><thead><tr><th>Produit</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Actions</th></tr></thead><tbody>${products.map(product=>`<tr><td class="product-name"><strong>${escapeHtml(product.name)}</strong><span class="muted">${escapeHtml(product.brand)}</span></td><td>${escapeHtml(product.category)}</td><td>${product.priceOnRequest?"À confirmer":money(product.price)}</td><td>${product.priceOnRequest?"À confirmer":product.stock}</td><td><div class="actions"><button class="btn secondary" data-edit="${product.id}">Modifier</button><button class="btn danger" data-delete="${product.id}">Supprimer</button></div></td></tr>`).join("")}</tbody></table>`;
         container.querySelectorAll("[data-edit]").forEach(button=>button.addEventListener("click",()=>productForm(products.find(product=>product.id===Number(button.dataset.edit)))));
         container.querySelectorAll("[data-delete]").forEach(button=>button.addEventListener("click",async()=>{if(!confirm("Supprimer ce produit ?"))return;try{await request(`/api/admin/products/${button.dataset.delete}`,{method:"DELETE"});await loadProducts()}catch(error){alert(error.message)}}));
       }catch(error){container.textContent=error.message}
