@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f6f4">
+  <title>Administration — Thiès Distribution</title>
+  <style>
+    :root{font-family:"Segoe UI",Arial,sans-serif;color:#17211d;background:#f5f6f4;font-size:14px}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer}.top{background:#17211d;color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}.brand{font-size:19px;font-weight:800}.brand span{color:#c8ef62}.top small{color:#bdc9c1}.wrap{max-width:1180px;margin:28px auto;padding:0 20px}.panel{background:white;border:1px solid #e4e9e5;border-radius:12px;padding:22px;margin-bottom:18px}.login{max-width:410px;margin:90px auto}.login h1,.page-head h1{font-size:23px;margin:0 0 8px}.muted{color:#748078;font-size:12px;line-height:1.55}.field{display:grid;gap:6px;margin:14px 0}.field label{font-size:12px;font-weight:650}.field input,.field select{width:100%;border:1px solid #dfe5e0;border-radius:7px;padding:10px;background:white;min-height:40px}.btn{border:0;border-radius:7px;background:#176b48;color:white;font-weight:700;padding:10px 14px}.btn.secondary{background:#edf5ee;color:#176b48}.btn.danger{background:#fff0eb;color:#a64830}.btn:disabled{opacity:.5;cursor:wait}.error{color:#a64830;font-size:12px;min-height:17px}.page-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.tabs{display:flex;gap:8px;margin-bottom:14px}.tabs button{border:1px solid #dfe5e0;border-radius:7px;background:white;padding:9px 13px;color:#66736a}.tabs button.active{background:#176b48;color:white;border-color:#176b48}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:720px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #edf0ed;vertical-align:middle;font-size:12px}th{font-size:10px;color:#748078;text-transform:uppercase;letter-spacing:.04em}td strong{display:block;font-size:12px}.status-select{border:1px solid #dfe5e0;border-radius:6px;background:white;padding:7px;font-size:11px}.actions{display:flex;gap:7px;align-items:center}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}.notice{padding:10px 12px;border-radius:8px;background:#eff7f0;color:#176b48;font-size:12px;margin:12px 0}.hidden{display:none!important}.form-actions{display:flex;gap:8px;margin-top:12px}.product-name{max-width:300px}.login-foot{text-align:center;margin-top:18px}@media(max-width:650px){.top{padding:14px 16px}.wrap{padding:0 12px;margin:18px auto}.panel{padding:16px}.page-head{align-items:flex-start}.page-head h1{font-size:20px}.grid{grid-template-columns:1fr}.actions{align-items:flex-start;flex-direction:column}.login{margin:55px auto}}
+  </style>
+</head>
+<body>
+  <header class="top"><div class="brand">MBI <span>Thiès Distribution</span> <small>/ Administration</small></div><button id="logout" class="btn secondary hidden">Se déconnecter</button></header>
+  <main class="wrap">
+    <section id="loginPanel" class="panel login">
+      <h1>Connexion administrateur</h1>
+      <p class="muted">L’accès est réservé à l’équipe Thiès Distribution. Utilisez le mot de passe configuré au démarrage du serveur.</p>
+      <form id="loginForm"><div class="field"><label for="password">Mot de passe</label><input id="password" type="password" autocomplete="current-password" required></div><div class="error" id="loginError"></div><button class="btn" type="submit">Se connecter</button></form>
+      <p class="muted login-foot"><a href="/">← Retour à la boutique</a></p>
+    </section>
+    <section id="dashboard" class="hidden">
+      <div class="page-head"><div><h1>Tableau de bord</h1><p class="muted">Commandes, catalogue et niveaux de stock.</p></div><a class="muted" href="/">Voir la boutique ↗</a></div>
+      <div class="tabs"><button class="active" data-tab="orders">Commandes</button><button data-tab="products">Produits</button></div>
+      <section id="ordersPanel" class="panel"><div class="page-head"><div><strong>Commandes clients</strong><p class="muted">Mettez à jour séparément l’avancement de la livraison et le statut du paiement. Ne marquez « Payé » qu’après confirmation effective.</p></div><button id="refreshOrders" class="btn secondary">Actualiser</button></div><div id="ordersContent" class="table-wrap"></div></section>
+      <section id="productsPanel" class="panel hidden"><div class="page-head"><div><strong>Catalogue produits</strong><p class="muted">La modification du stock ne change pas les commandes passées.</p></div><button id="newProduct" class="btn">Ajouter un produit</button></div><div id="productFormWrap" class="hidden"></div><div id="productsContent" class="table-wrap"></div></section>
+    </section>
+  </main>
+  <script>
+    const loginPanel=document.getElementById("loginPanel"),dashboard=document.getElementById("dashboard"),errorBox=document.getElementById("loginError");
+    let csrfToken="",products=[];
+    const money=value=>new Intl.NumberFormat("fr-FR").format(value)+" FCFA";
+    const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+    async function request(url,options={}) {
+      const headers={"Content-Type":"application/json",...(options.headers||{})};
+      if(options.method&&options.method!=="GET"&&csrfToken)headers["X-CSRF-Token"]=csrfToken;
+      const response=await fetch(url,{...options,headers});
+      const result=await response.json();
+      if(!response.ok)throw new Error(result.error||"La requête a échoué.");
+      return result;
+    }
+    function showDashboard(){loginPanel.classList.add("hidden");dashboard.classList.remove("hidden");document.getElementById("logout").classList.remove("hidden");loadOrders();loadProducts()}
+    async function checkSession(){try{const result=await request("/api/admin/session");if(result.authenticated){csrfToken=result.csrfToken;showDashboard()}}catch(error){errorBox.textContent=error.message}}
+    document.getElementById("loginForm").addEventListener("submit",async event=>{
+      event.preventDefault();errorBox.textContent="";
+      try{const result=await request("/api/admin/login",{method:"POST",body:JSON.stringify({password:document.getElementById("password").value})});csrfToken=result.csrfToken;showDashboard()}
+      catch(error){errorBox.textContent=error.message}
+    });
+    document.getElementById("logout").addEventListener("click",async()=>{try{await request("/api/admin/logout",{method:"POST",body:"{}"})}finally{csrfToken="";dashboard.classList.add("hidden");loginPanel.classList.remove("hidden");document.getElementById("logout").classList.add("hidden")}});
+    document.querySelectorAll("[data-tab]").forEach(button=>button.addEventListener("click",()=>{
+      document.querySelectorAll("[data-tab]").forEach(item=>item.classList.toggle("active",item===button));
+      document.getElementById("ordersPanel").classList.toggle("hidden",button.dataset.tab!=="orders");
+      document.getElementById("productsPanel").classList.toggle("hidden",button.dataset.tab!=="products");
+    }));
+    async function loadOrders(){
+      const container=document.getElementById("ordersContent");container.textContent="Chargement…";
+      try{const orders=await request("/api/admin/orders");
+        if(!orders.length){container.innerHTML='<p class="muted">Aucune commande pour le moment.</p>';return}
+        const orderStatusOptions=[["pending","En attente"],["preparing","En préparation"],["shipped","Expédiée"],["delivered","Livrée"],["cancelled","Annulée"]];
+        const transitions={pending:["pending","preparing","cancelled"],preparing:["preparing","shipped","cancelled"],shipped:["shipped","delivered","cancelled"],delivered:["delivered"],cancelled:["cancelled"]};
+        const paymentStatusLabels={awaiting_confirmation:"À confirmer manuellement",payable_on_delivery:"À régler à la livraison",paid:"Payé",failed:"Échec",refunded:"Remboursé",cancelled:"Paiement annulé",pending:"À confirmer"};
+        const paymentMethodLabels={cod:"Paiement à la livraison",mobile_money:"Mobile Money",card:"Carte bancaire",bank_transfer:"Virement bancaire"};
+        container.innerHTML=`<table><thead><tr><th>Commande</th><th>Client</th><th>Produits</th><th>Total</th><th>Paiement choisi</th><th>Statut commande</th><th>Statut paiement</th></tr></thead><tbody>${orders.map(order=>{
+          const paymentStatus=order.paymentStatus==="pending"?(order.paymentMethod==="cod"?"payable_on_delivery":"awaiting_confirmation"):order.paymentStatus;
+          const paymentOptions=paymentStatus==="paid"?[["paid","Payé"],["refunded","Remboursé"]]:paymentStatus==="refunded"?[["refunded","Remboursé"]]:paymentStatus==="cancelled"?[["cancelled","Paiement annulé"]]:order.status==="cancelled"?[["cancelled","Paiement annulé"]]:order.paymentMethod==="cod"?[["payable_on_delivery","À régler à la livraison"],...(order.status==="delivered"?[["paid","Payé"]]:[])]:[["awaiting_confirmation","À confirmer"],["paid","Payé"],["failed","Échec"],...(paymentStatus==="failed"?[["awaiting_confirmation","Nouvelle vérification"]]:[])];
+          return `<tr><td><strong>${escapeHtml(order.orderNumber)}</strong><span class="muted">${new Date(order.createdAt).toLocaleString("fr-FR")}</span></td><td><strong>${escapeHtml(order.customer.name)}</strong><span class="muted">${escapeHtml(order.customer.phone)} · ${escapeHtml(order.customer.address)}</span>${order.customer.companyName?`<span class="muted">${escapeHtml(order.customer.companyName)}</span>`:""}</td><td>${order.items.map(item=>`${escapeHtml(item.name)} × ${item.quantity}`).join("<br>")}</td><td><strong>${money(order.total)}</strong></td><td>${escapeHtml(paymentMethodLabels[order.paymentMethod]||order.paymentMethod)}</td><td><select class="status-select" data-order="${escapeHtml(order.orderNumber)}">${orderStatusOptions.filter(([value])=>(transitions[order.status]||[]).includes(value)).map(([value,label])=>`<option value="${value}" ${order.status===value?"selected":""}>${label}</option>`).join("")}</select></td><td><select class="status-select" data-payment="${escapeHtml(order.orderNumber)}">${paymentOptions.map(([value,label])=>`<option value="${value}" ${paymentStatus===value?"selected":""}>${label}</option>`).join("")}</select><span class="muted">${order.paymentMethod==="cod"&&order.status!=="delivered"&&paymentStatus!=="paid"?"Disponible après livraison":escapeHtml(paymentStatusLabels[paymentStatus]||paymentStatus)}</span>${order.refundRequired?'<strong class="error">Paiement reçu après annulation : remboursement à traiter</strong>':""}</td></tr>`;
+        }).join("")}</tbody></table>`;
+        container.querySelectorAll("[data-order]").forEach(select=>select.addEventListener("change",async()=>{
+          select.disabled=true;
+          try{await request(`/api/admin/orders/${encodeURIComponent(select.dataset.order)}`,{method:"PATCH",body:JSON.stringify({status:select.value})});await loadOrders();await loadProducts()}
+          catch(error){alert(error.message);loadOrders()}
+        }));
+        container.querySelectorAll("[data-payment]").forEach(select=>select.addEventListener("change",async()=>{
+          select.disabled=true;
+          try{await request(`/api/admin/orders/${encodeURIComponent(select.dataset.payment)}/payment`,{method:"PATCH",body:JSON.stringify({paymentStatus:select.value})});await loadOrders()}
+          catch(error){alert(error.message);loadOrders()}
+        }));
+      }catch(error){container.textContent=error.message}
+    }
+    function productForm(product={}){
+      const wrap=document.getElementById("productFormWrap");wrap.classList.remove("hidden");
+      const localImages=[
+        ["/assets/product-iphone.jpg","Smartphone"],
+        ["/assets/product-galaxy.jpg","Smartphone Samsung"],
+        ["/assets/product-laptop.jpg","Ordinateur portable"],
+        ["/assets/category-printer.jpg","Imprimante multifonction"],
+        ["/assets/product-headphones.jpg","Casque audio"],
+        ["/assets/product-console.jpg","Console de jeu"],
+        ["/assets/product-earbuds.jpg","Écouteurs sans fil"],
+        ["/assets/product-charger.svg","Chargeur USB-C"],
+        ["/assets/product-macbook.jpg","Ordinateur portable premium"],
+        ["/assets/product-controller.jpg","Manette de jeu"]
+      ];
+      const currentImageIsLocal=localImages.some(([src])=>src===product.image);
+      const currentImageOption=product.image&&!currentImageIsLocal
+        ?`<option value="${escapeHtml(product.image)}" selected>Image actuelle — choisissez une image locale pour continuer</option>`
+        :"";
+      wrap.innerHTML=`<form id="productForm" class="panel"><strong>${product.id?"Modifier le produit":"Nouveau produit"}</strong><div class="grid">
+        ${[["name","Nom du produit","text"],["brand","Marque","text"],["category","Catégorie","text"],["price","Prix (FCFA)","number"],["oldPrice","Prix barré (facultatif)","number"],["stock","Stock","number"],["tag","Badge","text"],["condition","État (Neuf ou Reconditionné)","text"],["storage","Stockage","text"],["ram","Mémoire RAM","text"],["warranty","Garantie","text"]].map(([name,label,type])=>`<div class="field"><label for="p-${name}">${label}</label><input id="p-${name}" name="${name}" type="${type}" ${["price","stock"].includes(name)?"min='0' step='1'":""} value="${escapeHtml(product[name]??"")}" ${["name","brand","category","price","stock","condition"].includes(name)?"required":""}></div>`).join("")}
+        <div class="field"><label for="p-image">Image locale (disponible hors connexion)</label><select id="p-image" name="image" required>${currentImageOption}${localImages.map(([src,label])=>`<option value="${src}" ${product.image===src?"selected":""}>${label}</option>`).join("")}</select></div>
+        </div><div class="error" id="productError"></div><div class="form-actions"><button class="btn" type="submit">Enregistrer</button><button class="btn secondary" type="button" id="cancelProduct">Annuler</button></div></form>`;
+      document.getElementById("cancelProduct").addEventListener("click",()=>wrap.classList.add("hidden"));
+      document.getElementById("productForm").addEventListener("submit",async event=>{
+        event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget).entries());
+        for(const key of ["price","stock"])data[key]=Number(data[key]);
+        data.oldPrice=data.oldPrice?Number(data.oldPrice):null;
+        try{await request(product.id?`/api/admin/products/${product.id}`:"/api/admin/products",{method:product.id?"PUT":"POST",body:JSON.stringify(data)});wrap.classList.add("hidden");await loadProducts()}
+        catch(error){document.getElementById("productError").textContent=error.message}
+      });
+    }
+    async function loadProducts(){
+      const container=document.getElementById("productsContent");container.textContent="Chargement…";
+      try{products=await request("/api/products");container.innerHTML=`<table><thead><tr><th>Produit</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Actions</th></tr></thead><tbody>${products.map(product=>`<tr><td class="product-name"><strong>${escapeHtml(product.name)}</strong><span class="muted">${escapeHtml(product.brand)}</span></td><td>${escapeHtml(product.category)}</td><td>${money(product.price)}</td><td>${product.stock}</td><td><div class="actions"><button class="btn secondary" data-edit="${product.id}">Modifier</button><button class="btn danger" data-delete="${product.id}">Supprimer</button></div></td></tr>`).join("")}</tbody></table>`;
+        container.querySelectorAll("[data-edit]").forEach(button=>button.addEventListener("click",()=>productForm(products.find(product=>product.id===Number(button.dataset.edit)))));
+        container.querySelectorAll("[data-delete]").forEach(button=>button.addEventListener("click",async()=>{if(!confirm("Supprimer ce produit ?"))return;try{await request(`/api/admin/products/${button.dataset.delete}`,{method:"DELETE"});await loadProducts()}catch(error){alert(error.message)}}));
+      }catch(error){container.textContent=error.message}
+    }
+    document.getElementById("newProduct").addEventListener("click",()=>productForm());
+    document.getElementById("refreshOrders").addEventListener("click",loadOrders);
+    checkSession();
+  </script>
+</body>
+</html>

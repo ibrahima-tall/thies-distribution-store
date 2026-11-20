@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#eef2ef"/>
+  <g fill="none" stroke="#9baa9e" stroke-linecap="round" stroke-linejoin="round" stroke-width="12">
+    <rect x="235" y="115" width="170" height="220" rx="22"/>
+    <path d="M288 145h64M302 305h36"/>
+  </g>
+  <text x="320" y="390" fill="#748078" font-family="Arial,sans-serif" font-size="21" text-anchor="middle">Image produit</text>
+</svg>
