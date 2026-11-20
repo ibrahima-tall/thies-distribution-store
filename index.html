@@ -897,12 +897,12 @@
         <aside class="filters" aria-label="Filtres produits">
           <div class="filter-head"><b>Filtrer les produits</b><button onclick="resetFilters()">Effacer</button></div>
           <div class="filter-group"><div class="filter-title">Catégories <span>−</span></div>
-            <label class="check-row"><input type="checkbox" name="category" value="Smartphones"> Smartphones <small>24</small></label>
-            <label class="check-row"><input type="checkbox" name="category" value="Informatique"> Informatique <small>18</small></label>
-            <label class="check-row"><input type="checkbox" name="category" value="Imprimantes"> Imprimantes <small>0</small></label>
-            <label class="check-row"><input type="checkbox" name="category" value="Audio"> Audio & vidéo <small>16</small></label>
-            <label class="check-row"><input type="checkbox" name="category" value="Gaming"> Gaming <small>12</small></label>
-            <label class="check-row"><input type="checkbox" name="category" value="Accessoires"> Accessoires <small>31</small></label>
+            <label class="check-row"><input type="checkbox" name="category" value="Smartphones"> Smartphones <small data-category-count="Smartphones">0</small></label>
+            <label class="check-row"><input type="checkbox" name="category" value="Informatique"> Informatique <small data-category-count="Informatique">0</small></label>
+            <label class="check-row"><input type="checkbox" name="category" value="Imprimantes"> Imprimantes <small data-category-count="Imprimantes">0</small></label>
+            <label class="check-row"><input type="checkbox" name="category" value="Audio"> Audio & vidéo <small data-category-count="Audio">0</small></label>
+            <label class="check-row"><input type="checkbox" name="category" value="Gaming"> Gaming <small data-category-count="Gaming">0</small></label>
+            <label class="check-row"><input type="checkbox" name="category" value="Accessoires"> Accessoires <small data-category-count="Accessoires">0</small></label>
           </div>
           <div class="filter-group"><div class="filter-title">Prix maximum <span>−</span></div>
             <input id="priceRange" class="price-range" type="range" min="50000" max="1500000" step="25000" value="1500000">
@@ -1092,8 +1092,14 @@
       document.getElementById("inStockFilter").checked=false;
       document.getElementById("searchInput").value="";
       activeCategory="";
+      showingFavorites=false;
       document.querySelectorAll(".category-card").forEach(card=>card.classList.remove("selected"));
-      updatePriceLabel(); renderProducts();
+      updateFavoriteControls(); updatePriceLabel(); renderProducts();
+    }
+    function updateCategoryCounts() {
+      document.querySelectorAll("[data-category-count]").forEach(counter=>{
+        counter.textContent=String(products.filter(product=>product.category===counter.dataset.categoryCount).length);
+      });
     }
     function updatePriceLabel() { document.getElementById("priceMaxLabel").textContent = new Intl.NumberFormat("fr-FR").format(Number(document.getElementById("priceRange").value))+" F"; }
     function toggleCompare(id,checked) {
@@ -1328,7 +1334,7 @@
       if(showingFavorites&&!favoriteIds.length) showToast("Aucun favori pour le moment. Ajoutez-en avec le cœur sur un produit.");
     });
     document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();document.getElementById("searchInput").focus()}if(e.key==="Escape"){toggleCart(false);document.querySelectorAll(".modal-wrap").forEach(modal=>modal.classList.remove("open"))}});
-    async function loadProducts(){products=await apiRequest("/api/products");favoriteIds=favoriteIds.filter(id=>products.some(product=>product.id===id));updateFavoriteControls();renderProducts();if(!cartRestored)restoreCart();else{cart=cart.map(item=>{const current=products.find(product=>product.id===item.id);return current?{...current,qty:Math.min(item.qty,current.stock)}:null}).filter(item=>item&&item.qty>0);updateCart()}}
+    async function loadProducts(){products=await apiRequest("/api/products");favoriteIds=favoriteIds.filter(id=>products.some(product=>product.id===id));updateFavoriteControls();updateCategoryCounts();renderProducts();if(!cartRestored)restoreCart();else{cart=cart.map(item=>{const current=products.find(product=>product.id===item.id);return current?{...current,qty:Math.min(item.qty,current.stock)}:null}).filter(item=>item&&item.qty>0);updateCart()}}
     restoreFavorites(); renderProducts(); updateCart();
     loadProducts().catch(error=>{showToast(`Catalogue indisponible : ${error.message}`);productGrid.innerHTML='<div class="empty-state">Le catalogue est inaccessible. Vérifiez que le serveur Thiès Distribution est démarré.</div>'});
     function safeExternalPaymentUrl(value){const url=new URL(value);if(url.protocol!=="https:")throw new Error("Le lien de paiement n’est pas sécurisé.");return url}

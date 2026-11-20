@@ -72,6 +72,22 @@ test("printer category has one listing and replacement demos use distinct catego
   assert.match(admin, /name="description"/);
 });
 
+test("clearing filters also exits favorites and category counts come from the live catalog", () => {
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const resetFilters = html.match(/function resetFilters\(\) \{([\s\S]*?)\n    \}/)?.[1];
+  const updateCategoryCounts = html.match(/function updateCategoryCounts\(\) \{([\s\S]*?)\n    \}/)?.[1];
+  const loadProducts = html.match(/async function loadProducts\(\)\{([\s\S]*?)\n    \}/)?.[1];
+
+  assert.ok(resetFilters, "reset filters handler must exist");
+  assert.match(resetFilters, /showingFavorites=false/);
+  assert.match(resetFilters, /updateFavoriteControls\(\)/);
+  assert.ok(updateCategoryCounts, "category counts must have a catalog-driven updater");
+  assert.match(updateCategoryCounts, /products\.filter\(product=>product\.category===counter\.dataset\.categoryCount\)/);
+  assert.ok(loadProducts, "catalog loader must exist");
+  assert.match(loadProducts, /updateCategoryCounts\(\)/);
+  assert.doesNotMatch(html, /value="Imprimantes"> Imprimantes <small>0<\/small>/);
+});
+
 test("clicking a product opens its own details without changing the product or comparison modal", () => {
   const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
   const detailHandler = html.match(/function showProduct\(id\) \{([\s\S]*?)\n    \}/)?.[1];
