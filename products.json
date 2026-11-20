@@ -173,9 +173,9 @@
   },
   {
     "id": 11,
-    "name": "Imprimante HP laser — modèle à confirmer",
-    "brand": "HP",
-    "category": "Imprimantes",
+    "name": "Accessoire informatique — produit à confirmer",
+    "brand": "Modèle de démonstration",
+    "category": "Accessoires",
     "price": null,
     "priceOnRequest": true,
     "oldPrice": null,
@@ -184,17 +184,17 @@
     "condition": "Modèle à confirmer",
     "stock": 0,
     "tag": "Prix à confirmer",
-    "image": "/assets/category-printer.jpg",
+    "image": "/assets/product-charger.jpg",
     "storage": "—",
     "ram": "—",
     "warranty": "À confirmer",
-    "description": "Fiche de démonstration. La technologie exacte, le modèle, le prix et le stock doivent être confirmés avant publication commerciale."
+    "description": "Fiche de démonstration avec photo illustrative. Le produit exact, ses caractéristiques, son prix et sa disponibilité sont à confirmer auprès de la boutique."
   },
   {
     "id": 12,
-    "name": "Imprimante HP à réservoir — modèle à confirmer",
-    "brand": "HP",
-    "category": "Imprimantes",
+    "name": "Ordinateur portable — modèle à confirmer",
+    "brand": "Modèle de démonstration",
+    "category": "Informatique",
     "price": null,
     "priceOnRequest": true,
     "oldPrice": null,
@@ -203,10 +203,10 @@
     "condition": "Modèle à confirmer",
     "stock": 0,
     "tag": "Prix à confirmer",
-    "image": "/assets/category-printer.jpg",
+    "image": "/assets/product-laptop.jpg",
     "storage": "—",
     "ram": "—",
     "warranty": "À confirmer",
-    "description": "Fiche de démonstration. Le modèle exact, les caractéristiques, le prix et la disponibilité sont à confirmer auprès de la boutique avant toute commande."
+    "description": "Fiche de démonstration avec photo illustrative. Le modèle exact, les caractéristiques, le prix et la disponibilité sont à confirmer auprès de la boutique."
   }
 ]

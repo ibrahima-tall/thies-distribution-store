@@ -42,22 +42,27 @@ test("the charger uses the supplied offline product photo", () => {
   assert.ok(fs.existsSync(path.join(root, charger.image.slice(1))), "charger photo must be bundled locally");
 });
 
-test("printer category has clearly marked non-purchasable demonstration products", () => {
+test("printer category has one listing and replacement demos use distinct categories", () => {
   const products = JSON.parse(fs.readFileSync(path.join(root, "products.json"), "utf8"));
   const printers = products.filter(product => product.category === "Imprimantes");
+  const replacementDemos = products.filter(product => [11, 12].includes(product.id));
   const server = fs.readFileSync(path.join(root, "server.js"), "utf8");
   const storefront = fs.readFileSync(path.join(root, "index.html"), "utf8");
   const admin = fs.readFileSync(path.join(root, "admin.html"), "utf8");
 
-  assert.equal(printers.length, 3);
-  for (const printer of printers) {
-    assert.equal(printer.price, null);
-    assert.equal(printer.priceOnRequest, true);
-    assert.equal(printer.stock, 0);
-    assert.equal(printer.tag, "Prix à confirmer");
-    assert.equal(printer.image, "/assets/category-printer.jpg");
-    assert.match(printer.description, /confirm/i);
+  assert.equal(printers.length, 1);
+  assert.equal(printers[0].id, 10);
+  assert.deepEqual(replacementDemos.map(product => product.category), ["Accessoires", "Informatique"]);
+  for (const product of [...printers, ...replacementDemos]) {
+    assert.equal(product.price, null);
+    assert.equal(product.priceOnRequest, true);
+    assert.equal(product.stock, 0);
+    assert.equal(product.tag, "Prix à confirmer");
+    assert.match(product.description, /confirm/i);
+    assert.ok(fs.existsSync(path.join(root, product.image.slice(1))), "demo product image must exist locally");
   }
+  assert.equal(replacementDemos[0].image, "/assets/product-charger.jpg");
+  assert.equal(replacementDemos[1].image, "/assets/product-laptop.jpg");
   assert.match(storefront, /p\.priceOnRequest\?"Prix à confirmer"/);
   assert.match(storefront, /p\.priceOnRequest\|\|p\.stock<1/);
   assert.match(server, /if \(product\.priceOnRequest \|\| !Number\.isSafeInteger\(product\.price\)/);

@@ -59,10 +59,12 @@ La maquette de référence décrit l’identité MBI / Thiès Distribution, la n
 8. Une redirection ou une notification isolée ne suffit pas à confirmer un paiement en ligne : la transaction est vérifiée côté serveur.
 9. L’administration n’expose pas les données avant authentification et contrôle les transitions des commandes.
 10. Les vérifications automatisées s’exécutent par `npm test` et `npm run check`.
+11. Les fiches de démonstration dont le prix est à confirmer restent visibles dans leur catégorie, mais ne peuvent pas être ajoutées au panier ni commandées.
 
 ## 5. Hors périmètre et limites connues
 
 - Les prix, stocks, visuels produits, coordonnées et conditions commerciales doivent être vérifiés par le propriétaire avant une vente réelle.
+- Les fiches de démonstration accessoires et informatique utilisent des images illustratives et ne représentent pas une offre commerciale tant que leurs modèles, prix et stocks ne sont pas confirmés.
 - La persistance JSON convient à une démo mono-instance ; elle n’offre ni transactions de base de données ni évolutivité de production.
 - Pas de compte client, d’historique de commandes autonome, de facturation PDF, de gestion IMEI/SAV, d’import massif ni de moteur de recherche externe.
 - Aucun paiement en ligne n’est actif dans la configuration locale actuelle : il manque une URL HTTPS publique et les clés des comptes marchands.
