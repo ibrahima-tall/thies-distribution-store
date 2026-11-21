@@ -308,6 +308,8 @@
     .stock { color: var(--green); font-size: 9px; }
     .add-btn { width: 30px; height: 30px; border: 0; border-radius: 8px; display: grid; place-items: center; color: white; background: var(--green); }
     .add-btn:hover { background: var(--green-dark); }
+    .product-inquiry-btn { width: auto; min-width: 46px; padding: 0 8px; text-decoration: none; font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .product-contact-btn { display: block; text-align: center; text-decoration: none; }
     .empty-state { background: white; border-radius: 12px; padding: 42px 20px; text-align: center; color: var(--muted); grid-column: 1/-1; }
     .promo { margin: 46px 0; border-radius: 16px; background: #e9f1e7; padding: 24px 30px; display: flex; align-items: center; gap: 22px; }
     .promo-icon { color: var(--green); }
@@ -997,8 +999,14 @@
       bank_transfer:"La commande sera réservée. L’équipe vous communiquera les coordonnées bancaires et confirmera le virement manuellement."
     };
     const onlinePaymentMethods=["mobile_money","card"];
+    const supportWhatsAppNumber="221771234567";
     let configuredPaymentProviders=[];
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+    function productInquiryUrl(product) {
+      const request=product.priceOnRequest?"son prix et sa disponibilité":"sa disponibilité";
+      const message=`Bonjour, je souhaite connaître ${request} pour le produit : ${product.name}.`;
+      return `https://wa.me/${supportWhatsAppNumber}?text=${encodeURIComponent(message)}`;
+    }
     async function apiRequest(url, options = {}) {
       const response = await fetch(url, {headers:{"Content-Type":"application/json",...(options.headers||{})},...options});
       const result = await response.json();
@@ -1049,7 +1057,7 @@
             <div class="product-name" role="button" tabindex="0" aria-label="Afficher le détail de ${escapeHtml(p.name)}" onclick="showProduct(${p.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showProduct(${p.id})}">${escapeHtml(p.name)}</div>
             ${p.reviews>0?`<div class="rating">★★★★★ <span>${p.rating} (${p.reviews} avis)</span></div>`:""}
             <div class="price-line"><span class="price">${p.priceOnRequest?"Prix à confirmer":formatPrice(p.price)}</span>${p.oldPrice?`<span class="old-price">${formatPrice(p.oldPrice)}</span>`:""}</div>
-            <div class="product-foot"><span class="stock">${p.priceOnRequest?"Disponibilité à confirmer":p.stock>0?`● En stock (${p.stock})`:"● Indisponible"}</span><button class="add-btn" aria-label="${p.priceOnRequest?"Prix à confirmer pour":"Ajouter"} ${escapeHtml(p.name)} au panier" onclick="addToCart(${p.id})" ${p.priceOnRequest||p.stock<1?"disabled style='opacity:.4;cursor:not-allowed'":""}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg></button></div>
+            <div class="product-foot"><span class="stock">${p.priceOnRequest?"Prix et disponibilité à confirmer":p.stock>0?`● En stock (${p.stock})`:"● Indisponible"}</span>${p.priceOnRequest||p.stock<1?`<a class="add-btn product-inquiry-btn" href="${escapeHtml(productInquiryUrl(p))}" target="_blank" rel="noopener noreferrer" aria-label="Demander ${p.priceOnRequest?"le prix":"la disponibilité"} de ${escapeHtml(p.name)}">${p.priceOnRequest?"Prix ?":"Stock ?"}</a>`:`<button class="add-btn" aria-label="Ajouter ${escapeHtml(p.name)} au panier" onclick="addToCart(${p.id})"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg></button>`}</div>
           </div>
         </article>`).join("");
     }
@@ -1179,10 +1187,10 @@
           <h4>${escapeHtml(p.name)}</h4>
           ${p.reviews>0?`<div class="rating" aria-label="Note ${p.rating} sur 5">★★★★★ <span>${p.rating} (${p.reviews} avis)</span></div>`:""}
           <div class="product-detail-price"><span class="price">${p.priceOnRequest?"Prix à confirmer":formatPrice(p.price)}</span>${p.oldPrice?`<span class="old-price">${formatPrice(p.oldPrice)}</span>`:""}</div>
-          <p class="product-detail-stock">${p.priceOnRequest?"Disponibilité à confirmer":p.stock>0?`● En stock (${p.stock})`:"● Actuellement indisponible"}</p>
+          <p class="product-detail-stock">${p.priceOnRequest?"Prix et disponibilité à confirmer":p.stock>0?`● En stock (${p.stock})`:"● Actuellement indisponible"}</p>
           ${p.description?`<p>${escapeHtml(p.description)}</p>`:""}
           ${specs.length?`<table class="product-specs" aria-label="Caractéristiques du produit"><tbody>${specs.map(([label,value])=>`<tr><th scope="row">${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`).join("")}</tbody></table>`:""}
-          <button class="checkout-btn" onclick="addToCart(${p.id});document.getElementById('productDetailModal').classList.remove('open')" ${p.priceOnRequest||p.stock<1?"disabled":""}>${p.priceOnRequest?"Prix à confirmer":p.stock>0?"Ajouter au panier":"Indisponible"}</button>
+          ${p.priceOnRequest||p.stock<1?`<a class="checkout-btn product-contact-btn" href="${escapeHtml(productInquiryUrl(p))}" target="_blank" rel="noopener noreferrer">${p.priceOnRequest?"Demander le prix et la disponibilité":"Demander la disponibilité"}</a>`:`<button class="checkout-btn" onclick="addToCart(${p.id});document.getElementById('productDetailModal').classList.remove('open')">Ajouter au panier</button>`}
         </div>
       </div>`;
       document.getElementById("productDetailModal").classList.add("open");

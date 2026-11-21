@@ -88,6 +88,26 @@ test("clearing filters also exits favorites and category counts come from the li
   assert.doesNotMatch(html, /value="Imprimantes"> Imprimantes <small>0<\/small>/);
 });
 
+test("price-confirmation and out-of-stock products offer a working WhatsApp inquiry instead of a disabled add button", () => {
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const inquiryUrl = html.match(/function productInquiryUrl\(product\) \{([\s\S]*?)\n    \}/)?.[1];
+  const renderProducts = html.match(/function renderProducts\(\) \{([\s\S]*?)\n    \}/)?.[1];
+  const showProduct = html.match(/function showProduct\(id\) \{([\s\S]*?)\n    \}/)?.[1];
+
+  assert.ok(inquiryUrl, "product inquiry URL helper must exist");
+  assert.match(inquiryUrl, /https:\/\/wa\.me\/\$\{supportWhatsAppNumber\}/);
+  assert.match(inquiryUrl, /encodeURIComponent\(message\)/);
+  assert.ok(renderProducts, "product card renderer must exist");
+  assert.match(renderProducts, /p\.priceOnRequest\|\|p\.stock<1\?`<a class="add-btn product-inquiry-btn"/);
+  assert.match(renderProducts, /target="_blank" rel="noopener noreferrer"/);
+  assert.match(renderProducts, /onclick="addToCart\(\$\{p\.id\}\)"/);
+  assert.doesNotMatch(renderProducts, /p\.priceOnRequest\|\|p\.stock<1\?"disabled/);
+  assert.ok(showProduct, "product detail renderer must exist");
+  assert.match(showProduct, /Demander le prix et la disponibilité/);
+  assert.match(showProduct, /Demander la disponibilité/);
+  assert.match(showProduct, /productInquiryUrl\(p\)/);
+});
+
 test("clicking a product opens its own details without changing the product or comparison modal", () => {
   const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
   const detailHandler = html.match(/function showProduct\(id\) \{([\s\S]*?)\n    \}/)?.[1];
