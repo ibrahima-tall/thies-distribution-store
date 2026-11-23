@@ -79,6 +79,8 @@ Le premier démarrage crée `data/store.json` à partir de `products.json`. Les 
 
 Le serveur impose des limites de taille de requête et valide côté serveur les produits, quantités, prix du catalogue, stock, client et statuts. La livraison est gratuite à partir de 100 000 FCFA, et coûte 3 000 FCFA sinon. Le paiement à la livraison est limité à 150 000 FCFA. Les produits et prix fournis dans le catalogue doivent être vérifiés par le commerçant : ce sont des données de démonstration.
 
+Les visiteurs peuvent parcourir la boutique et passer commande sans compte client. Les favoris sont conservés dans le navigateur. Les produits signalés `priceOnRequest` ou dont le stock est nul ne peuvent pas être ajoutés au panier ; la carte produit et sa fiche détaillée proposent plutôt un lien `wa.me` avec un message prérempli. Le numéro de support est configuré dans `index.html` (`supportWhatsAppNumber`). Le client doit envoyer le message dans WhatsApp : le lien ne crée ni commande ni réservation.
+
 ## 6. Paiements
 
 - Mobile Money et carte bancaire passent par les pages sécurisées de PayDunya, CinetPay ou FedaPay.
@@ -101,5 +103,7 @@ npm run check
 ## 8. Publication et exploitation
 
 Avant une mise en production : vérifier le droit d’utiliser le logo et les photographies MBI/Thiès Distribution, confirmer les coordonnées et liens sociaux, les prix et les stocks ; renseigner les documents de vente et de confidentialité ; obtenir les comptes marchands ; déployer derrière un hébergement TLS ; définir des sauvegardes et tester la restauration. Les commandes contiennent des données personnelles et ne doivent pas être publiées dans un dépôt.
+
+Le serveur `npm start` écoute localement ; `http://localhost:3000` est accessible depuis l’ordinateur qui l’exécute, pas automatiquement depuis Internet. Publier le code sur GitHub ne déploie pas le serveur. Un accès public nécessite un hébergement compatible avec Node.js, une configuration réseau et de domaine, HTTPS, et un stockage persistant adapté. Ne pas exposer directement le serveur de développement.
 
 Le dépôt ignore `.env`, les fichiers d’environnement locaux et `data/store.json`. Ne jamais forcer leur ajout avec `git add -f`.

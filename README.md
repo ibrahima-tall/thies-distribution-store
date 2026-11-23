@@ -1,6 +1,6 @@
 # Thiès Distribution
 
-Boutique web responsive de matériel électronique pour le Sénégal. Le MVP comprend un catalogue, une recherche et des filtres, un panier, les commandes et leur suivi, ainsi qu’une interface d’administration.
+Boutique web responsive de matériel électronique pour le Sénégal. Le MVP comprend un catalogue consultable sans compte client, une recherche et des filtres, des fiches produit, un panier, les commandes et leur suivi, ainsi qu’une interface d’administration.
 
 ## Documentation
 
@@ -32,9 +32,15 @@ Laissez le terminal ouvert. La boutique est à [http://localhost:3000](http://lo
 
 Le serveur initialise `data/store.json` à partir de `products.json` au premier démarrage. Les commandes et les modifications ultérieures du catalogue sont enregistrées dans `data/store.json`, exclu de Git. Faites des sauvegardes et vérifiez les données de démonstration avant toute vente réelle.
 
+## Accès à la boutique et demandes de produits
+
+La boutique et l’administration démarrent sur cet ordinateur ; `localhost` n’est pas une adresse publique. Le dépôt GitHub conserve le code et la documentation, mais ne publie ni n’héberge automatiquement le site. Pour le rendre accessible sur Internet, il faudra choisir un hébergement compatible avec Node.js, configurer un domaine et HTTPS, puis protéger et sauvegarder les données.
+
+Les visiteurs peuvent consulter le catalogue et passer commande sans créer de compte. Pour un produit dont le prix reste à confirmer ou qui est indisponible, la boutique propose une demande préremplie par WhatsApp au lieu d’autoriser l’ajout au panier. Le client doit ouvrir WhatsApp et envoyer le message lui-même ; cette demande n’est pas une commande. Ce parcours nécessite une connexion Internet.
+
 ## Ressources et fonctionnement hors ligne
 
-Les images de la boutique se trouvent dans `assets/` et sont servies par le serveur local. L’affichage du site et les visuels restent disponibles sans connexion Internet une fois le projet installé ; les commandes hébergées, les prestataires de paiement et tout futur déploiement public exigent une connexion.
+Les images de la boutique se trouvent dans `assets/` et sont servies par le serveur local. L’affichage du site et les visuels restent disponibles sans connexion Internet une fois le projet installé ; WhatsApp, les commandes hébergées, les prestataires de paiement et tout futur déploiement public exigent une connexion.
 
 ## Paiements
 

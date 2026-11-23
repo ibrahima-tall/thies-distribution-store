@@ -13,7 +13,7 @@ La maquette de référence décrit l’identité MBI / Thiès Distribution, la n
 
 | Profil | Besoin |
 |---|---|
-| Visiteur / acheteur | Trouver un article, examiner son prix et son stock, puis commander avec des coordonnées de livraison. |
+| Visiteur / acheteur | Consulter le catalogue sans compte, examiner un article, commander avec ses coordonnées de livraison ou demander le prix/la disponibilité d’un article concerné. |
 | Acheteur professionnel | Demander un devis pour une commande en volume et fournir les informations de son entreprise. |
 | Administrateur | Consulter les commandes, modifier le catalogue et ajuster les stocks au moyen d’une session protégée. |
 
@@ -26,7 +26,9 @@ La maquette de référence décrit l’identité MBI / Thiès Distribution, la n
 - Images du catalogue et du bandeau hébergées localement dans `assets/`.
 - Recherche textuelle dans les noms, marques et catégories.
 - Filtres par catégorie, marque, état, disponibilité et prix ; tri par prix ou notes.
-- Consultation du catalogue, favoris mémorisés dans le navigateur, panier et comparaison de produits.
+- Fiches détaillées des produits, favoris mémorisés dans le navigateur, panier et comparaison de produits.
+- Consultation et commande sans création de compte client ; suivi d’une commande par sa référence et le téléphone fourni.
+- Pour un article dont le prix est à confirmer ou le stock nul, demande de prix ou de disponibilité via un lien WhatsApp prérempli. Le client envoie lui-même le message ; cela ne crée pas de commande.
 - Passage de commande avec coordonnées client, livraison, mode de paiement et suivi de commande.
 - Parcours de demande de devis professionnel.
 
@@ -60,16 +62,18 @@ La maquette de référence décrit l’identité MBI / Thiès Distribution, la n
 9. L’administration n’expose pas les données avant authentification et contrôle les transitions des commandes.
 10. Les vérifications automatisées s’exécutent par `npm test` et `npm run check`.
 11. Les fiches de démonstration dont le prix est à confirmer restent visibles dans leur catégorie, mais ne peuvent pas être ajoutées au panier ni commandées.
+12. Un produit dont le prix est à confirmer ou dont le stock est nul propose une demande WhatsApp depuis sa carte et sa fiche détaillée ; un produit achetable conserve l’ajout au panier.
 
 ## 5. Hors périmètre et limites connues
 
 - Les prix, stocks, visuels produits, coordonnées et conditions commerciales doivent être vérifiés par le propriétaire avant une vente réelle.
 - Les fiches de démonstration accessoires et informatique utilisent des images illustratives et ne représentent pas une offre commerciale tant que leurs modèles, prix et stocks ne sont pas confirmés.
+- Les demandes WhatsApp nécessitent une connexion Internet et l’accès à WhatsApp ; elles ne garantissent pas la disponibilité du produit et ne remplacent pas une commande confirmée.
 - La persistance JSON convient à une démo mono-instance ; elle n’offre ni transactions de base de données ni évolutivité de production.
 - Pas de compte client, d’historique de commandes autonome, de facturation PDF, de gestion IMEI/SAV, d’import massif ni de moteur de recherche externe.
 - Aucun paiement en ligne n’est actif dans la configuration locale actuelle : il manque une URL HTTPS publique et les clés des comptes marchands.
 - Les URL des réseaux sociaux de la maquette restent à fournir pour rendre les icônes interactives.
-- Le serveur local n’est pas un hébergement public. Avant la production, prévoir HTTPS, stockage persistant, sauvegardes testées, supervision, documents légaux et validation des comptes marchands.
+- Le serveur local n’est pas un hébergement public ; la présence du code sur GitHub ne rend pas la boutique accessible sur Internet. Avant la production, prévoir un hébergement Node.js, un domaine, HTTPS, stockage persistant, sauvegardes testées, supervision, documents légaux et validation des comptes marchands.
 
 ## 6. Évolutions proposées
 
